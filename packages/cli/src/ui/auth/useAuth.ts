@@ -162,7 +162,7 @@ export const useAuthCommand = (
           // Show the error message directly without "Failed to login" prefix
           onAuthError(getErrorMessage(e));
         } else {
-          onAuthError(`Failed to login. Message: ${getErrorMessage(e)}`);
+          onAuthError(`Failed to sign in. Message: ${getErrorMessage(e)}`);
         }
       }
     })();
