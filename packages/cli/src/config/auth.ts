@@ -42,5 +42,10 @@ export function validateAuthMethod(authMethod: string): string | null {
     return null;
   }
 
+  if (authMethod === AuthType.CUSTOM_API_KEY) {
+    // Custom API Key 可以在运行时通过对话框输入，不需要预先设置环境变量
+    return null;
+  }
+
   return 'Invalid auth method selected.';
 }

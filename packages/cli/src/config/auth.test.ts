@@ -84,6 +84,12 @@ describe('validateAuthMethod', () => {
         'Update your environment and try again (no reload needed if using .env)!',
     },
     {
+      description: 'should return null for CUSTOM_API_KEY',
+      authType: AuthType.CUSTOM_API_KEY,
+      envs: {},
+      expected: null,
+    },
+    {
       description: 'should return an error message for an invalid auth method',
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       authType: 'invalid-method' as any,
