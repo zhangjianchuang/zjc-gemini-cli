@@ -9,10 +9,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 BUNDLE_JS="$ROOT_DIR/bundle/gemini.js"
 
+# 进入项目根目录
+cd "$ROOT_DIR"
+
+# 确保依赖同步（防止 node_modules 与 package-lock.json 不一致）
+if [ ! -f "node_modules/.installed_ok" ] || [ "$ROOT_DIR/package-lock.json" -nt "node_modules/.installed_ok" ]; then
+    echo "正在同步依赖..."
+    npm install
+fi
+
 # 检查 bundle 是否存在
 if [ ! -f "$BUNDLE_JS" ]; then
     echo "bundle/gemini.js 不存在，正在构建..."
-    cd "$ROOT_DIR"
     npm run bundle
 fi
 
