@@ -25,6 +25,7 @@ import { parseCustomHeaders } from '../utils/customHeaderUtils.js';
 import { RecordingContentGenerator } from './recordingContentGenerator.js';
 import { getVersion, resolveModel } from '../../index.js';
 import type { LlmRole } from '../telemetry/llmRole.js';
+import { OpenAiContentGenerator } from './openAiContentGenerator.js';
 
 /**
  * Interface abstracting the core functionalities for generating content and counting tokens.
@@ -100,6 +101,7 @@ export type ContentGeneratorConfig = {
   proxy?: string;
   baseUrl?: string;
   customHeaders?: Record<string, string>;
+  apiProtocol?: 'gemini' | 'openai';
 };
 
 export async function createContentGeneratorConfig(
@@ -131,6 +133,11 @@ export async function createContentGeneratorConfig(
     baseUrl,
     customHeaders,
   };
+
+  if (authType === AuthType.CUSTOM_API_KEY) {
+    contentGeneratorConfig.baseUrl = baseUrl || process.env['CUSTOM_BASE_URL'];
+    contentGeneratorConfig.apiProtocol = process.env['CUSTOM_API_PROTOCOL'] === 'openai' ? 'openai' : 'gemini';
+  }
 
   // If we are using Google auth or we are in Cloud Shell, there is nothing else to validate for now
   if (
@@ -227,6 +234,10 @@ export async function createContentGenerator(
       config.authType === AuthType.USE_VERTEX_AI ||
       config.authType === AuthType.GATEWAY
     ) {
+      if (config.apiProtocol === 'openai') {
+        return new LoggingContentGenerator(new OpenAiContentGenerator(config, gcConfig), gcConfig);
+      }
+
       let headers: Record<string, string> = { ...baseHeaders };
       if (config.customHeaders) {
         headers = { ...headers, ...config.customHeaders };
