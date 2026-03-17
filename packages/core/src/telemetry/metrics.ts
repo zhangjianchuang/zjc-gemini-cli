@@ -1040,6 +1040,7 @@ function getGenAiProvider(authType?: string): GenAiProviderName {
     case AuthType.LOGIN_WITH_GOOGLE:
       return GenAiProviderName.GCP_VERTEX_AI;
     case AuthType.USE_GEMINI:
+    case AuthType.CUSTOM_API_KEY:
     default:
       return GenAiProviderName.GCP_GEN_AI;
   }

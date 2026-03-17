@@ -71,3 +71,43 @@ export async function clearApiKey(): Promise<void> {
     debugLogger.error('Failed to clear API key from storage:', error);
   }
 }
+
+const CUSTOM_API_KEY_ENTRY = 'custom-api-key';
+
+export async function loadCustomApiKey(): Promise<string | null> {
+  try {
+    const credentials = await storage.getCredentials(CUSTOM_API_KEY_ENTRY);
+    if (credentials?.token?.accessToken) {
+      return credentials.token.accessToken;
+    }
+    return null;
+  } catch (error: unknown) {
+    debugLogger.error('Failed to load Custom API key from storage:', error);
+    return null;
+  }
+}
+
+export async function saveCustomApiKey(apiKey: string | null | undefined): Promise<void> {
+  if (!apiKey || apiKey.trim() === '') {
+    try {
+      await storage.deleteCredentials(CUSTOM_API_KEY_ENTRY);
+    } catch (error: unknown) {
+      debugLogger.warn('Failed to delete Custom API key from storage:', error);
+    }
+    return;
+  }
+  const credentials = {
+    serverName: CUSTOM_API_KEY_ENTRY,
+    token: { accessToken: apiKey, tokenType: 'ApiKey' },
+    updatedAt: Date.now(),
+  };
+  await storage.setCredentials(credentials as any);
+}
+
+export async function clearCustomApiKey(): Promise<void> {
+  try {
+    await storage.deleteCredentials(CUSTOM_API_KEY_ENTRY);
+  } catch (error: unknown) {
+    debugLogger.error('Failed to clear Custom API key from storage:', error);
+  }
+}

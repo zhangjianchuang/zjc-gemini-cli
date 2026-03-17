@@ -15,7 +15,7 @@ import {
 } from '@google/genai';
 import { createCodeAssistContentGenerator } from '../code_assist/codeAssist.js';
 import type { Config } from '../config/config.js';
-import { loadApiKey } from './apiKeyCredentialStorage.js';
+import { loadApiKey, loadCustomApiKey } from './apiKeyCredentialStorage.js';
 
 import type { UserTierId, GeminiUserTier } from '../code_assist/types.js';
 import { LoggingContentGenerator } from './loggingContentGenerator.js';
@@ -60,6 +60,7 @@ export enum AuthType {
   LEGACY_CLOUD_SHELL = 'cloud-shell',
   COMPUTE_ADC = 'compute-default-credentials',
   GATEWAY = 'gateway',
+  CUSTOM_API_KEY = 'custom-api-key',
 }
 
 /**
@@ -76,6 +77,9 @@ export function getAuthTypeFromEnv(): AuthType | undefined {
   }
   if (process.env['GOOGLE_GENAI_USE_VERTEXAI'] === 'true') {
     return AuthType.USE_VERTEX_AI;
+  }
+  if (process.env['CUSTOM_API_KEY']) {
+    return AuthType.CUSTOM_API_KEY;
   }
   if (process.env['GEMINI_API_KEY']) {
     return AuthType.USE_GEMINI;
@@ -105,6 +109,10 @@ export async function createContentGeneratorConfig(
   baseUrl?: string,
   customHeaders?: Record<string, string>,
 ): Promise<ContentGeneratorConfig> {
+  const customApiKey =
+    process.env['CUSTOM_API_KEY'] ||
+    (await loadCustomApiKey()) ||
+    undefined;
   const geminiApiKey =
     apiKey ||
     process.env['GEMINI_API_KEY'] ||
@@ -129,6 +137,12 @@ export async function createContentGeneratorConfig(
     authType === AuthType.LOGIN_WITH_GOOGLE ||
     authType === AuthType.COMPUTE_ADC
   ) {
+    return contentGeneratorConfig;
+  }
+
+  if (authType === AuthType.CUSTOM_API_KEY && customApiKey) {
+    contentGeneratorConfig.apiKey = customApiKey;
+    contentGeneratorConfig.vertexai = false;
     return contentGeneratorConfig;
   }
 
@@ -167,7 +181,7 @@ export async function createContentGenerator(
     const version = await getVersion();
     const model = resolveModel(
       gcConfig.getModel(),
-      config.authType === AuthType.USE_GEMINI ||
+      config.authType === AuthType.USE_GEMINI || config.authType === AuthType.CUSTOM_API_KEY ||
         config.authType === AuthType.USE_VERTEX_AI ||
         ((await gcConfig.getGemini31Launched?.()) ?? false),
     );
@@ -186,7 +200,7 @@ export async function createContentGenerator(
 
     if (
       apiKeyAuthMechanism === 'bearer' &&
-      (config.authType === AuthType.USE_GEMINI ||
+      (config.authType === AuthType.USE_GEMINI || config.authType === AuthType.CUSTOM_API_KEY ||
         config.authType === AuthType.USE_VERTEX_AI) &&
       config.apiKey
     ) {
@@ -209,7 +223,7 @@ export async function createContentGenerator(
     }
 
     if (
-      config.authType === AuthType.USE_GEMINI ||
+      config.authType === AuthType.USE_GEMINI || config.authType === AuthType.CUSTOM_API_KEY ||
       config.authType === AuthType.USE_VERTEX_AI ||
       config.authType === AuthType.GATEWAY
     ) {

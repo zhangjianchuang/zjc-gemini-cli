@@ -24,6 +24,7 @@ vi.mock('../code_assist/codeAssist.js');
 vi.mock('@google/genai');
 vi.mock('./apiKeyCredentialStorage.js', () => ({
   loadApiKey: vi.fn(),
+  loadCustomApiKey: vi.fn(),
 }));
 
 vi.mock('./fakeContentGenerator.js');

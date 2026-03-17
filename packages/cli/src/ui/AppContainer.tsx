@@ -61,6 +61,7 @@ import {
   recordExitFail,
   ShellExecutionService,
   saveApiKey,
+  saveCustomApiKey,
   debugLogger,
   coreEvents,
   CoreEvent,
@@ -810,9 +811,15 @@ Logging in with Google... Restarting Gemini CLI to continue.
           return;
         }
 
-        await saveApiKey(apiKey);
-        await reloadApiKey();
-        await config.refreshAuth(AuthType.USE_GEMINI);
+        const authType = settings.merged.security.auth.selectedType;
+        if (authType === AuthType.CUSTOM_API_KEY) {
+          await saveCustomApiKey(apiKey);
+          await config.refreshAuth(AuthType.CUSTOM_API_KEY);
+        } else {
+          await saveApiKey(apiKey);
+          await reloadApiKey();
+          await config.refreshAuth(AuthType.USE_GEMINI);
+        }
         setAuthState(AuthState.Authenticated);
       } catch (e) {
         onAuthError(
@@ -820,7 +827,7 @@ Logging in with Google... Restarting Gemini CLI to continue.
         );
       }
     },
-    [setAuthState, onAuthError, reloadApiKey, config],
+    [setAuthState, onAuthError, reloadApiKey, config, settings],
   );
 
   const handleApiKeyCancel = useCallback(() => {

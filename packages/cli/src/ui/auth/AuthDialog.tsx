@@ -71,6 +71,11 @@ export function AuthDialog({
       key: AuthType.USE_GEMINI,
     },
     {
+      label: 'Use Custom API Key',
+      value: AuthType.CUSTOM_API_KEY,
+      key: AuthType.CUSTOM_API_KEY,
+    },
+    {
       label: 'Vertex AI',
       value: AuthType.USE_VERTEX_AI,
       key: AuthType.USE_VERTEX_AI,
@@ -101,6 +106,10 @@ export function AuthDialog({
 
     if (defaultAuthType) {
       return item.value === defaultAuthType;
+    }
+
+    if (process.env['CUSTOM_API_KEY']) {
+      return item.value === AuthType.CUSTOM_API_KEY;
     }
 
     if (process.env['GEMINI_API_KEY']) {
@@ -138,6 +147,16 @@ export function AuthDialog({
 
         if (authType === AuthType.USE_GEMINI) {
           if (process.env['GEMINI_API_KEY'] !== undefined) {
+            setAuthState(AuthState.Unauthenticated);
+            return;
+          } else {
+            setAuthState(AuthState.AwaitingApiKeyInput);
+            return;
+          }
+        }
+        
+        if (authType === AuthType.CUSTOM_API_KEY) {
+          if (process.env['CUSTOM_API_KEY'] !== undefined) {
             setAuthState(AuthState.Unauthenticated);
             return;
           } else {

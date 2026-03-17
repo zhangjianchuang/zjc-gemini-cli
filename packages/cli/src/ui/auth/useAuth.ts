@@ -10,6 +10,7 @@ import {
   AuthType,
   type Config,
   loadApiKey,
+  loadCustomApiKey,
   debugLogger,
   isAccountSuspendedError,
   ProjectIdRequiredError,
@@ -66,6 +67,18 @@ export const useAuthCommand = (
   );
 
   const reloadApiKey = useCallback(async () => {
+    const authType = settings.merged.security.auth.selectedType;
+    if (authType === AuthType.CUSTOM_API_KEY) {
+      const envKey = process.env['CUSTOM_API_KEY'];
+      if (envKey !== undefined) {
+        setApiKeyDefaultValue(envKey);
+        return envKey;
+      }
+      const storedKey = (await loadCustomApiKey()) ?? '';
+      setApiKeyDefaultValue(storedKey);
+      return storedKey;
+    }
+
     const envKey = process.env['GEMINI_API_KEY'];
     if (envKey !== undefined) {
       setApiKeyDefaultValue(envKey);
@@ -75,7 +88,7 @@ export const useAuthCommand = (
     const storedKey = (await loadApiKey()) ?? '';
     setApiKeyDefaultValue(storedKey);
     return storedKey;
-  }, []);
+  }, [settings.merged.security.auth.selectedType]);
 
   useEffect(() => {
     if (authState === AuthState.AwaitingApiKeyInput) {

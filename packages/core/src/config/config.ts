@@ -1219,8 +1219,8 @@ export class Config implements McpContext {
     // Vertex and Genai have incompatible encryption and sending history with
     // thoughtSignature from Genai to Vertex will fail, we need to strip them
     if (
-      this.contentGeneratorConfig?.authType === AuthType.USE_GEMINI &&
-      authMethod !== AuthType.USE_GEMINI
+      (this.contentGeneratorConfig?.authType === AuthType.USE_GEMINI || this.contentGeneratorConfig?.authType === AuthType.CUSTOM_API_KEY) &&
+      authMethod !== AuthType.USE_GEMINI && authMethod !== AuthType.CUSTOM_API_KEY
     ) {
       // Restore the conversation history to the new client
       this.geminiClient.stripThoughtsFromHistory();
@@ -1268,7 +1268,7 @@ export class Config implements McpContext {
 
     const authType = this.contentGeneratorConfig.authType;
     if (
-      authType === AuthType.USE_GEMINI ||
+      authType === AuthType.USE_GEMINI || authType === AuthType.CUSTOM_API_KEY ||
       authType === AuthType.USE_VERTEX_AI
     ) {
       this.setHasAccessToPreviewModel(true);
@@ -2526,7 +2526,7 @@ export class Config implements McpContext {
   getGemini31LaunchedSync(): boolean {
     const authType = this.contentGeneratorConfig?.authType;
     if (
-      authType === AuthType.USE_GEMINI ||
+      authType === AuthType.USE_GEMINI || authType === AuthType.CUSTOM_API_KEY ||
       authType === AuthType.USE_VERTEX_AI
     ) {
       return true;
