@@ -1684,11 +1684,6 @@ Logging in with Google... Restarting Gemini CLI to continue.
 
   const handleGlobalKeypress = useCallback(
     (key: Key): boolean => {
-      // Debug log keystrokes if enabled
-      if (settings.merged.general.debugKeystrokeLogging) {
-        debugLogger.log('[DEBUG] Keystroke:', JSON.stringify(key));
-      }
-
       if (shortcutsHelpVisible && isHelpDismissKey(key)) {
         setShortcutsHelpVisible(false);
       }
@@ -1867,7 +1862,6 @@ Logging in with Google... Restarting Gemini CLI to continue.
       activePtyId,
       handleSuspend,
       embeddedShellFocused,
-      settings.merged.general.debugKeystrokeLogging,
       refreshStatic,
       setCopyModeEnabled,
       tabFocusTimeoutRef,
