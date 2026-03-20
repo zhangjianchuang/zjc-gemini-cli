@@ -49,11 +49,12 @@ if [ ! -d "$GEMINI_BUNDLE_DIR" ]; then
 fi
 
 echo "正在更新 gemini 命令..."
-echo "  源文件：$BUNDLE_JS"
+echo "  源目录：$ROOT_DIR/bundle/"
 echo "  目标目录：$GEMINI_BUNDLE_DIR"
 
-# 复制文件
-cp "$BUNDLE_JS" "$GEMINI_BUNDLE_DIR/gemini.js"
+# 复制整个 bundle 目录内容
+rm -rf "$GEMINI_BUNDLE_DIR"/*
+cp -R "$ROOT_DIR/bundle/"* "$GEMINI_BUNDLE_DIR/"
 chmod +x "$GEMINI_BUNDLE_DIR/gemini.js"
 
 # 获取版本信息
